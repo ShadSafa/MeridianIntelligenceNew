@@ -1,0 +1,88 @@
+<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="chartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d9ff;stop-opacity:0.2" />
+      <stop offset="100%" style="stop-color:#ff1493;stop-opacity:0.1" />
+    </linearGradient>
+    <filter id="nodeGlow">
+      <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="300" height="300" fill="#001a33"/>
+  <rect width="300" height="300" fill="url(#chartGrad)"/>
+
+  <!-- CEO/Head AI Node (Top) -->
+  <circle cx="150" cy="40" r="18" fill="#00d9ff" stroke="#00d9ff" stroke-width="2" filter="url(#nodeGlow)"/>
+  <text x="150" y="46" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#001a33" text-anchor="middle">CEO</text>
+
+  <!-- Connection lines from CEO to 3 middle managers -->
+  <line x1="150" y1="58" x2="80" y2="95" stroke="#00d9ff" stroke-width="1.5" opacity="0.7"/>
+  <line x1="150" y1="58" x2="150" y2="95" stroke="#ff1493" stroke-width="1.5" opacity="0.7"/>
+  <line x1="150" y1="58" x2="220" y2="95" stroke="#00d9ff" stroke-width="1.5" opacity="0.7"/>
+
+  <!-- Middle Level Nodes (Managers) -->
+  <!-- Left Manager -->
+  <circle cx="80" cy="110" r="16" fill="#ff1493" stroke="#ff1493" stroke-width="2" filter="url(#nodeGlow)"/>
+  <text x="80" y="115" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#001a33" text-anchor="middle">Sales</text>
+
+  <!-- Center Manager -->
+  <circle cx="150" cy="110" r="16" fill="#00d9ff" stroke="#00d9ff" stroke-width="2" filter="url(#nodeGlow)"/>
+  <text x="150" y="115" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#001a33" text-anchor="middle">Ops</text>
+
+  <!-- Right Manager -->
+  <circle cx="220" cy="110" r="16" fill="#ff1493" stroke="#ff1493" stroke-width="2" filter="url(#nodeGlow)"/>
+  <text x="220" y="115" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#001a33" text-anchor="middle">Support</text>
+
+  <!-- Lines from managers to team -->
+  <!-- Left team -->
+  <line x1="70" y1="123" x2="50" y2="155" stroke="#ff1493" stroke-width="1" opacity="0.6"/>
+  <line x1="80" y1="126" x2="80" y2="155" stroke="#ff1493" stroke-width="1" opacity="0.6"/>
+  <line x1="90" y1="123" x2="110" y2="155" stroke="#ff1493" stroke-width="1" opacity="0.6"/>
+
+  <!-- Center team -->
+  <line x1="140" y1="126" x2="130" y2="155" stroke="#00d9ff" stroke-width="1" opacity="0.6"/>
+  <line x1="150" y1="126" x2="150" y2="155" stroke="#00d9ff" stroke-width="1" opacity="0.6"/>
+  <line x1="160" y1="126" x2="170" y2="155" stroke="#00d9ff" stroke-width="1" opacity="0.6"/>
+
+  <!-- Right team -->
+  <line x1="210" y1="123" x2="190" y2="155" stroke="#ff1493" stroke-width="1" opacity="0.6"/>
+  <line x1="220" y1="126" x2="220" y2="155" stroke="#ff1493" stroke-width="1" opacity="0.6"/>
+  <line x1="230" y1="123" x2="250" y2="155" stroke="#ff1493" stroke-width="1" opacity="0.6"/>
+
+  <!-- Individual Team Members (Bottom Level) -->
+  <!-- Left team -->
+  <circle cx="50" cy="170" r="11" fill="#00d9ff" stroke="#00d9ff" stroke-width="1.5"/>
+  <circle cx="80" cy="170" r="11" fill="#00d9ff" stroke="#00d9ff" stroke-width="1.5"/>
+  <circle cx="110" cy="170" r="11" fill="#00d9ff" stroke="#00d9ff" stroke-width="1.5"/>
+
+  <!-- Center team -->
+  <circle cx="130" cy="170" r="11" fill="#ff1493" stroke="#ff1493" stroke-width="1.5"/>
+  <circle cx="150" cy="170" r="11" fill="#ff1493" stroke="#ff1493" stroke-width="1.5"/>
+  <circle cx="170" cy="170" r="11" fill="#ff1493" stroke="#ff1493" stroke-width="1.5"/>
+
+  <!-- Right team -->
+  <circle cx="190" cy="170" r="11" fill="#00d9ff" stroke="#00d9ff" stroke-width="1.5"/>
+  <circle cx="220" cy="170" r="11" fill="#00d9ff" stroke="#00d9ff" stroke-width="1.5"/>
+  <circle cx="250" cy="170" r="11" fill="#00d9ff" stroke="#00d9ff" stroke-width="1.5"/>
+
+  <!-- Labels below chart -->
+  <text x="150" y="210" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#00d9ff" text-anchor="middle">
+    AI ORGANIZATION
+  </text>
+
+  <!-- Legend -->
+  <text x="150" y="240" font-family="Arial, sans-serif" font-size="10" fill="#cccccc" text-anchor="middle">
+    9 AI Agents Working Together
+  </text>
+
+  <!-- Decorative network dots -->
+  <circle cx="40" cy="250" r="2" fill="#00d9ff" opacity="0.5"/>
+  <circle cx="260" cy="250" r="2" fill="#ff1493" opacity="0.5"/>
+  <circle cx="150" cy="270" r="2" fill="#00d9ff" opacity="0.5"/>
+</svg>

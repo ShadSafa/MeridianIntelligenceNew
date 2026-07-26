@@ -1,0 +1,60 @@
+<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="tutorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d9ff;stop-opacity:0.2" />
+      <stop offset="100%" style="stop-color:#ff1493;stop-opacity:0.1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="300" height="300" fill="#001a33"/>
+  <circle cx="150" cy="150" r="140" fill="url(#tutorGrad)" stroke="#00d9ff" stroke-width="2" opacity="0.3"/>
+
+  <!-- AI Head/Brain -->
+  <circle cx="150" cy="100" r="35" fill="none" stroke="#00d9ff" stroke-width="2" filter="url(#glow)"/>
+  <circle cx="150" cy="100" r="30" fill="#002652"/>
+
+  <!-- Neural network lines in head -->
+  <circle cx="135" cy="90" r="3" fill="#00d9ff"/>
+  <circle cx="165" cy="90" r="3" fill="#00d9ff"/>
+  <circle cx="140" cy="110" r="3" fill="#ff1493"/>
+  <circle cx="160" cy="110" r="3" fill="#ff1493"/>
+
+  <line x1="135" y1="90" x2="140" y2="110" stroke="#00d9ff" stroke-width="1" opacity="0.6"/>
+  <line x1="165" y1="90" x2="160" y2="110" stroke="#ff1493" stroke-width="1" opacity="0.6"/>
+  <line x1="135" y1="90" x2="165" y2="90" stroke="#00d9ff" stroke-width="1" opacity="0.6"/>
+
+  <!-- Eyes -->
+  <circle cx="140" cy="95" r="2.5" fill="#00d9ff"/>
+  <circle cx="160" cy="95" r="2.5" fill="#00d9ff"/>
+
+  <!-- Body -->
+  <rect x="120" y="135" width="60" height="50" rx="8" fill="none" stroke="#00d9ff" stroke-width="2"/>
+  <rect x="125" y="140" width="50" height="40" fill="#002652"/>
+
+  <!-- Arms with tech elements -->
+  <line x1="120" y1="155" x2="80" y2="150" stroke="#00d9ff" stroke-width="3"/>
+  <line x1="180" y1="155" x2="220" y2="150" stroke="#ff1493" stroke-width="3"/>
+
+  <!-- Hand circles -->
+  <circle cx="75" cy="150" r="4" fill="#00d9ff"/>
+  <circle cx="225" cy="150" r="4" fill="#ff1493"/>
+
+  <!-- Teaching indicator - floating text -->
+  <text x="150" y="230" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#00d9ff" text-anchor="middle" filter="url(#glow)">
+    AI TUTOR
+  </text>
+
+  <!-- Decorative particles -->
+  <circle cx="90" cy="80" r="1.5" fill="#00d9ff" opacity="0.6"/>
+  <circle cx="210" cy="120" r="1.5" fill="#ff1493" opacity="0.6"/>
+  <circle cx="100" cy="200" r="1.5" fill="#00d9ff" opacity="0.6"/>
+  <circle cx="220" cy="180" r="1.5" fill="#ff1493" opacity="0.6"/>
+</svg>
