@@ -490,7 +490,85 @@ body {
     max-width: 100%;
     filter: drop-shadow(0 0 40px rgba(0, 217, 255, 0.3));
 }
+/* Waitlist Form Styles */
+.waitlist-form-container {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
 
+.waitlist-label {
+    font-size: 0.95rem;
+    color: #a0aec0;
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+}
+
+.waitlist-form {
+    display: flex;
+    gap: 0.5rem;
+    max-width: 420px;
+    position: relative;
+}
+
+.waitlist-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    font-size: 1rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.waitlist-input::placeholder {
+    color: #6b7280;
+}
+
+.waitlist-input:focus {
+    border-color: #3b82f6;
+}
+
+.waitlist-button {
+    padding: 0.75rem 1.25rem;
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+    font-family: inherit;
+}
+
+.waitlist-button:hover {
+    background: #2563eb;
+}
+
+/* Adjust stat numbers for text instead of numbers */
+.stat-number {
+    font-size: 1.5rem;  /* was probably 2.5rem+ for large numbers */
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+    .waitlist-form {
+        flex-direction: column;
+    }
+    .waitlist-button {
+        width: 100%;
+    }
+    .stat-number {
+        font-size: 1.25rem;
+    }
+}
 /* ===== CTA SECTION ===== */
 .cta-section {
     position: relative;
