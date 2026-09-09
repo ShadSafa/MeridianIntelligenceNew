@@ -18,12 +18,31 @@ async function counterKey(ip) {
     .join('');
 }
 
+const IP_HEADERS = [
+  'x-nf-client-connection-ip',
+  'x-forwarded-for',
+  'true-client-ip',
+  'client-ip',
+  'x-real-ip',
+  'cf-connecting-ip'
+];
+
 export function clientIp(request, context) {
   if (context && typeof context.ip === 'string' && context.ip) return context.ip;
-  const forwarded = request.headers.get('x-nf-client-connection-ip')
-    || request.headers.get('x-forwarded-for');
-  if (!forwarded) return null;
-  return forwarded.split(',')[0].trim() || null;
+
+  for (const name of IP_HEADERS) {
+    const value = request.headers.get(name);
+    if (value) {
+      const first = value.split(',')[0].trim();
+      if (first) return first;
+    }
+  }
+
+  console.error(
+    'no client IP resolved; headers present:',
+    Array.from(request.headers.keys()).join(',')
+  );
+  return null;
 }
 
 /**
