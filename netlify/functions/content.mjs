@@ -1,4 +1,5 @@
 import { getStore } from '@netlify/blobs';
+import { verifyUser, jsonResponse } from '../lib/identity.mjs';
 
 const STORE = 'meridian-content';
 const KEY = 'content';
@@ -15,6 +16,9 @@ const LIMITS = {
 
 const MAX_RESULTS = 10;
 const MAX_ITEMS = 200;
+
+// Built from escape sequences so no literal control bytes end up in this file.
+const CONTROL_CHARS = new RegExp('[\\u0000-\\u001F\\u007F]', 'g');
 
 const SEED = {
   caseStudies: [
@@ -98,14 +102,6 @@ const SEED = {
   ]
 };
 
-const CONTROL_CHARS = /[\u0000-\u001F\u007F]/g;
-
-const json = (statusCode, body) => ({
-  statusCode,
-  headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
-  body: JSON.stringify(body)
-});
-
 function clean(value, max) {
   if (typeof value !== 'string') return null;
   const trimmed = value.replace(CONTROL_CHARS, '').trim();
@@ -163,51 +159,49 @@ function publicView(content) {
   };
 }
 
-export const handler = async (event, context) => {
+export default async (request) => {
   let store;
   try {
     store = getStore(STORE);
   } catch (error) {
-    // Logged rather than swallowed: without this the 503 is undiagnosable.
     console.error('getStore failed:', error && error.message);
-    return json(503, { error: 'Content storage is unavailable.' });
+    return jsonResponse(503, { error: 'Content storage is unavailable.' });
   }
 
-  if (event.httpMethod === 'GET') {
+  if (request.method === 'GET') {
     try {
-      return json(200, publicView(await readContent(store)));
-    } catch {
-      return json(500, { error: 'Could not load content.' });
+      return jsonResponse(200, publicView(await readContent(store)));
+    } catch (error) {
+      console.error('read failed:', error && error.message);
+      return jsonResponse(500, { error: 'Could not load content.' });
     }
   }
 
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, headers: { Allow: 'GET, POST' }, body: '' };
+  if (request.method !== 'POST') {
+    return new Response(null, { status: 405, headers: { Allow: 'GET, POST' } });
   }
 
-  // Netlify verifies the Identity JWT signature before invoking this function.
-  // An absent user means the token was missing, expired, or forged.
-  const user = context.clientContext && context.clientContext.user;
+  const user = await verifyUser(request);
   if (!user) {
-    return json(401, { error: 'You must be signed in to add content.' });
+    return jsonResponse(401, { error: 'You must be signed in to add content.' });
   }
 
   let payload;
   try {
-    payload = JSON.parse(event.body || '{}');
+    payload = await request.json();
   } catch {
-    return json(400, { error: 'Malformed request.' });
+    return jsonResponse(400, { error: 'Malformed request.' });
   }
 
   const isCaseStudy = payload.type === 'caseStudy';
   const isFaq = payload.type === 'faq';
   if (!isCaseStudy && !isFaq) {
-    return json(400, { error: 'Unknown content type.' });
+    return jsonResponse(400, { error: 'Unknown content type.' });
   }
 
   const item = isCaseStudy ? validateCaseStudy(payload) : validateFaq(payload);
   if (!item) {
-    return json(400, { error: 'One or more fields are missing or too long.' });
+    return jsonResponse(400, { error: 'One or more fields are missing or too long.' });
   }
 
   try {
@@ -215,7 +209,7 @@ export const handler = async (event, context) => {
     const collection = isCaseStudy ? content.caseStudies : content.faqs;
 
     if (collection.length >= MAX_ITEMS) {
-      return json(409, { error: 'This collection is full.' });
+      return jsonResponse(409, { error: 'This collection is full.' });
     }
 
     item.addedBy = user.email;
@@ -223,8 +217,9 @@ export const handler = async (event, context) => {
     collection.push(item);
 
     await store.setJSON(KEY, content);
-    return json(201, publicView(content));
-  } catch {
-    return json(500, { error: 'Could not save content.' });
+    return jsonResponse(201, publicView(content));
+  } catch (error) {
+    console.error('write failed:', error && error.message);
+    return jsonResponse(500, { error: 'Could not save content.' });
   }
 };
