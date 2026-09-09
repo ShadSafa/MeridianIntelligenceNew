@@ -71,3 +71,16 @@ export default async (request) => {
     return jsonResponse(500, { error: 'Could not save your email. Please try again.' });
   }
 };
+
+// Enforced by Netlify at the edge, before this function is invoked, so a flood
+// costs neither invocations nor storage. Ten per minute per IP is far more than
+// a person joining a waitlist needs, while making scripted signup floods
+// impractical. Excess requests get a 429.
+export const config = {
+  rateLimit: {
+    windowSize: 60,
+    windowLimit: 10,
+    algorithm: 'sliding_window',
+    aggregateBy: ['domain', 'ip']
+  }
+};
