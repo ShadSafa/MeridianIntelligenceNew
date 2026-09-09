@@ -24,6 +24,7 @@
                 <li><a href="#services" class="nav-link">Services</a></li>
                 <li><a href="#about" class="nav-link">About</a></li>
                 <li><a href="contact.html" class="nav-link">Contact</a></li>
+                <li><button type="button" id="authButton" class="auth-button">Admin sign in</button></li>
             </ul>
         </div>
     </nav>
@@ -43,7 +44,7 @@
             <p class="hero-description fade-in-up delay-2">
                 Intelligent agents that amplify human potential and drive innovation
             </p>
-            <button class="cta-button fade-in-up delay-3" onclick="window.location.href='case-studies.html'">Explore Our Platform</button>
+            <a href="case-studies.html" class="cta-button fade-in-up delay-3">Explore Our Platform</a>
         </div>
 
         <div class="hero-robot-container fade-in-right">
@@ -173,7 +174,7 @@
                         </ul>
                     </div>
 
-                    <button class="service-btn" onclick="window.location.href='schedule-demo.html#training'">Learn More</button>
+                    <a href="schedule-demo.html#training" class="service-btn">Learn More</a>
                 </div>
 
                 <!-- Service 2: AI Implementation for SMBs -->
@@ -210,7 +211,7 @@
                         </ul>
                     </div>
 
-                    <button class="service-btn" onclick="window.location.href='contact.html'">Get Started</button>
+                    <a href="contact.html" class="service-btn">Get Started</a>
                 </div>
             </div>
 
@@ -315,22 +316,22 @@
                 <!-- Waitlist Email Form -->
                 <div class="waitlist-form-container fade-in-up delay-3">
                     <p class="waitlist-label">Get notified when we launch:</p>
-                    <div class="waitlist-success-message" id="waitlistSuccess" style="display: none; color: #00ff88; margin-bottom: 15px;">
-                        ✓ Thank you! You've been added to the waitlist.
-                    </div>
-                    <form
-                        id="waitlistForm"
-                        class="waitlist-form"
-                        novalidate
-                    >
+                    <div class="form-notice" id="waitlistNotice"></div>
+                    <form id="waitlistForm" class="waitlist-form" novalidate>
                         <input
                             type="email"
                             id="waitlistEmail"
                             name="email"
                             class="waitlist-input"
                             placeholder="you@company.com"
+                            maxlength="254"
+                            autocomplete="email"
                             required
                         />
+                        <div class="visually-hidden" aria-hidden="true">
+                            <label for="waitlistCompany">Company</label>
+                            <input type="text" id="waitlistCompany" name="company" tabindex="-1" autocomplete="off">
+                        </div>
                         <button type="submit" class="waitlist-button">Join the Waitlist</button>
                     </form>
                 </div>
@@ -357,8 +358,8 @@
                 Join leading organizations leveraging AI to unlock new possibilities
             </p>
             <div class="cta-buttons fade-in delay-2">
-                <button class="btn btn-primary" onclick="window.location.href='contact.html'">Get Started</button>
-                <button class="btn btn-secondary" onclick="window.location.href='schedule-demo.html'">Schedule Demo</button>
+                <a href="contact.html" class="btn btn-primary">Get Started</a>
+                <a href="schedule-demo.html" class="btn btn-secondary">Schedule Demo</a>
             </div>
         </div>
     </section>
@@ -402,28 +403,9 @@
         </div>
     </footer>
 
-    <script src="database.js"></script>
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <script src="auth.js"></script>
     <script src="script.js"></script>
-    <script>
-        document.getElementById('waitlistForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const email = document.getElementById('waitlistEmail').value;
-
-            const data = {
-                email: email,
-                timestamp: new Date().toISOString()
-            };
-
-            await saveToDatabase('waitlist', Date.now().toString(), data);
-
-            document.getElementById('waitlistSuccess').style.display = 'block';
-            this.reset();
-
-            setTimeout(() => {
-                document.getElementById('waitlistSuccess').style.display = 'none';
-            }, 5000);
-        });
-    </script>
+    <script src="page-index.js"></script>
 </body>
 </html>

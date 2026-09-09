@@ -37,34 +37,33 @@
         }
 
         .faq-question {
+            width: 100%;
             padding: 20px;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 15px;
             background: rgba(0, 26, 51, 0.6);
-            transition: all 0.3s ease;
+            border: none;
             border-bottom: 1px solid rgba(0, 217, 255, 0.1);
+            font-family: inherit;
+            text-align: left;
+            transition: background 0.3s ease;
         }
 
         .faq-question:hover {
             background: rgba(0, 38, 82, 0.6);
-            border-left: 3px solid var(--cyan-bright);
         }
 
-        .faq-question h3 {
+        .faq-question span:first-child {
             color: var(--cyan-bright);
-            margin: 0;
             font-size: 1.1rem;
+            font-weight: 600;
             flex: 1;
         }
 
         .faq-toggle {
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             color: var(--cyan-bright);
             font-weight: bold;
             font-size: 1.5rem;
@@ -88,13 +87,13 @@
         }
 
         .add-faq-btn {
-            display: inline-block;
             background: linear-gradient(135deg, var(--cyan-bright) 0%, var(--cyan-light) 100%);
             color: var(--primary-navy);
             padding: 12px 30px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
+            font-family: inherit;
             font-weight: 700;
             margin-top: 40px;
             transition: all 0.3s ease;
@@ -179,6 +178,7 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
+            font-family: inherit;
             font-weight: 600;
         }
 
@@ -193,6 +193,12 @@
             border: 1px solid var(--cyan-bright);
         }
 
+        .status-line {
+            color: var(--text-light);
+            text-align: center;
+            padding: 20px;
+        }
+
         @media (max-width: 768px) {
             .faqs-container {
                 padding: 80px 20px;
@@ -202,21 +208,18 @@
                 font-size: 2rem;
             }
 
-            .faq-question h3 {
+            .faq-question span:first-child {
                 font-size: 1rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <span class="logo-icon">◆</span>
-                <a href="index.html" style="text-decoration: none; color: inherit;">
-                    <span>Meridian Intelligence</span>
-                </a>
+                <span class="logo-icon">&#9670;</span>
+                <a href="index.html"><span>Meridian Intelligence</span></a>
             </div>
             <ul class="nav-menu">
                 <li><a href="index.html#hero" class="nav-link">Home</a></li>
@@ -224,6 +227,7 @@
                 <li><a href="index.html#services" class="nav-link">Services</a></li>
                 <li><a href="index.html#about" class="nav-link">About</a></li>
                 <li><a href="contact.html" class="nav-link">Contact</a></li>
+                <li><button type="button" id="authButton" class="auth-button">Admin sign in</button></li>
             </ul>
         </div>
     </nav>
@@ -234,117 +238,36 @@
             <p>Get answers to common questions about our AI solutions</p>
         </div>
 
-        <div id="faqsList"></div>
+        <div class="form-notice" id="pageNotice"></div>
 
-        <button class="add-faq-btn" onclick="openAddModal()">+ Add FAQ</button>
+        <div id="faqsList"></div>
+        <p class="status-line" id="statusLine">Loading FAQs...</p>
+
+        <button type="button" class="add-faq-btn" id="openAddModal" data-requires-auth>+ Add FAQ</button>
+        <p class="admin-hint">Sign in as an administrator to add an FAQ.</p>
     </div>
 
-    <!-- Add FAQ Modal -->
     <div class="modal" id="addModal">
         <div class="modal-content">
             <h2>Add New FAQ</h2>
+            <div class="form-notice" id="modalNotice"></div>
             <div class="form-group">
-                <label>Question</label>
-                <input type="text" id="faqQuestion" placeholder="What is your question?">
+                <label for="faqQuestion">Question</label>
+                <input type="text" id="faqQuestion" maxlength="300" placeholder="What is your question?">
             </div>
             <div class="form-group">
-                <label>Answer</label>
-                <textarea id="faqAnswer" placeholder="Provide a detailed answer..."></textarea>
+                <label for="faqAnswer">Answer</label>
+                <textarea id="faqAnswer" maxlength="2000" placeholder="Provide a detailed answer..."></textarea>
             </div>
             <div class="modal-buttons">
-                <button class="save-btn" onclick="saveNewFAQ()">Save</button>
-                <button class="cancel-btn" onclick="closeAddModal()">Cancel</button>
+                <button type="button" class="save-btn" id="saveFaq">Save</button>
+                <button type="button" class="cancel-btn" id="cancelFaq">Cancel</button>
             </div>
         </div>
     </div>
 
-    <script src="database.js"></script>
-    <script>
-        const defaultFAQs = [
-            {
-                question: "What is Meridian Intelligence?",
-                answer: "Meridian Intelligence is a platform that helps businesses implement and deploy AI agents to automate tasks, improve efficiency, and drive innovation. We specialize in custom AI solutions tailored to your industry and business needs."
-            },
-            {
-                question: "How do AI agents work?",
-                answer: "AI agents are autonomous systems that can understand tasks, make decisions, and take actions to accomplish goals. They use machine learning and natural language processing to learn from data and improve over time. Our agents can handle customer service, data analysis, content creation, and much more."
-            },
-            {
-                question: "Is AI implementation expensive?",
-                answer: "The cost of AI implementation depends on your specific needs and scale. However, our solutions are designed to provide ROI within 90 days through increased efficiency and reduced operational costs. We offer flexible pricing models to suit businesses of all sizes."
-            },
-            {
-                question: "Do you provide training for our team?",
-                answer: "Yes! We offer comprehensive AI literacy and training programs to help your team understand how to work effectively with AI agents. Our training is customized based on your team's background and industry requirements."
-            },
-            {
-                question: "What industries do you serve?",
-                answer: "We work with businesses across various industries including IT, retail, hospitality, legal services, healthcare, finance, and more. Our solutions are customizable to fit any industry's specific needs."
-            }
-        ];
-
-        async function loadFAQs() {
-            let faqs = await loadFromDatabase('faqs', 'data') || { items: defaultFAQs };
-
-            if (!faqs.items || faqs.items.length === 0) {
-                faqs.items = defaultFAQs;
-                await saveToDatabase('faqs', 'data', faqs);
-            }
-
-            renderFAQs(faqs.items);
-        }
-
-        function renderFAQs(items) {
-            const list = document.getElementById('faqsList');
-            list.innerHTML = '';
-
-            items.forEach((faq, index) => {
-                const item = document.createElement('div');
-                item.className = 'faq-item';
-                item.innerHTML = `
-                    <div class="faq-question" onclick="toggleFAQ(this)">
-                        <h3>${faq.question}</h3>
-                        <span class="faq-toggle">+</span>
-                    </div>
-                    <div class="faq-answer">${faq.answer}</div>
-                `;
-                list.appendChild(item);
-            });
-        }
-
-        function toggleFAQ(element) {
-            element.parentElement.classList.toggle('active');
-        }
-
-        function openAddModal() {
-            document.getElementById('addModal').classList.add('show');
-        }
-
-        function closeAddModal() {
-            document.getElementById('addModal').classList.remove('show');
-            document.getElementById('faqQuestion').value = '';
-            document.getElementById('faqAnswer').value = '';
-        }
-
-        async function saveNewFAQ() {
-            const question = document.getElementById('faqQuestion').value;
-            const answer = document.getElementById('faqAnswer').value;
-
-            if (!question || !answer) {
-                alert('Please fill in both question and answer');
-                return;
-            }
-
-            let faqs = await loadFromDatabase('faqs', 'data') || { items: [] };
-            faqs.items.push({ question, answer });
-            await saveToDatabase('faqs', 'data', faqs);
-
-            renderFAQs(faqs.items);
-            closeAddModal();
-        }
-
-        // Load FAQs on page load
-        loadFAQs();
-    </script>
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <script src="auth.js"></script>
+    <script src="page-faqs.js"></script>
 </body>
 </html>

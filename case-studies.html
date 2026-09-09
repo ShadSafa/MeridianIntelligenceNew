@@ -100,20 +100,20 @@
         }
 
         .case-study-results li:before {
-            content: '✓';
+            content: '\2713';
             position: absolute;
             left: 0;
             color: #00ff88;
         }
 
         .add-case-study-btn {
-            display: inline-block;
             background: linear-gradient(135deg, var(--cyan-bright) 0%, var(--cyan-light) 100%);
             color: var(--primary-navy);
             padding: 12px 30px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
+            font-family: inherit;
             font-weight: 700;
             margin-top: 30px;
             transition: all 0.3s ease;
@@ -198,6 +198,7 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
+            font-family: inherit;
             font-weight: 600;
         }
 
@@ -210,6 +211,12 @@
             background: rgba(0, 217, 255, 0.2);
             color: var(--cyan-bright);
             border: 1px solid var(--cyan-bright);
+        }
+
+        .status-line {
+            color: var(--text-light);
+            text-align: center;
+            padding: 20px;
         }
 
         @media (max-width: 768px) {
@@ -228,14 +235,11 @@
     </style>
 </head>
 <body>
-    <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <span class="logo-icon">◆</span>
-                <a href="index.html" style="text-decoration: none; color: inherit;">
-                    <span>Meridian Intelligence</span>
-                </a>
+                <span class="logo-icon">&#9670;</span>
+                <a href="index.html"><span>Meridian Intelligence</span></a>
             </div>
             <ul class="nav-menu">
                 <li><a href="index.html#hero" class="nav-link">Home</a></li>
@@ -243,6 +247,7 @@
                 <li><a href="index.html#services" class="nav-link">Services</a></li>
                 <li><a href="index.html#about" class="nav-link">About</a></li>
                 <li><a href="contact.html" class="nav-link">Contact</a></li>
+                <li><button type="button" id="authButton" class="auth-button">Admin sign in</button></li>
             </ul>
         </div>
     </nav>
@@ -253,179 +258,50 @@
             <p>See how we've helped businesses transform with AI</p>
         </div>
 
-        <div class="case-studies-grid" id="caseStudiesGrid"></div>
+        <div class="form-notice" id="pageNotice"></div>
 
-        <button class="add-case-study-btn" onclick="openAddModal()">+ Add Case Study</button>
+        <div class="case-studies-grid" id="caseStudiesGrid"></div>
+        <p class="status-line" id="statusLine">Loading case studies...</p>
+
+        <button type="button" class="add-case-study-btn" id="openAddModal" data-requires-auth>
+            + Add Case Study
+        </button>
+        <p class="admin-hint">Sign in as an administrator to add a case study.</p>
     </div>
 
-    <!-- Add Case Study Modal -->
     <div class="modal" id="addModal">
         <div class="modal-content">
             <h2>Add New Case Study</h2>
+            <div class="form-notice" id="modalNotice"></div>
             <div class="form-group">
-                <label>Company Name</label>
-                <input type="text" id="csCompanyName" placeholder="Company name">
+                <label for="csCompanyName">Company Name</label>
+                <input type="text" id="csCompanyName" maxlength="120" placeholder="Company name">
             </div>
             <div class="form-group">
-                <label>Industry</label>
-                <input type="text" id="csIndustry" placeholder="e.g., Technology, Retail, etc.">
+                <label for="csIndustry">Industry</label>
+                <input type="text" id="csIndustry" maxlength="80" placeholder="e.g., Technology, Retail">
             </div>
             <div class="form-group">
-                <label>Challenge</label>
-                <textarea id="csChallenge" placeholder="What was the main challenge?"></textarea>
+                <label for="csChallenge">Challenge</label>
+                <textarea id="csChallenge" maxlength="1000" placeholder="What was the main challenge?"></textarea>
             </div>
             <div class="form-group">
-                <label>Solution</label>
-                <textarea id="csSolution" placeholder="How did we help?"></textarea>
+                <label for="csSolution">Solution</label>
+                <textarea id="csSolution" maxlength="1000" placeholder="How did we help?"></textarea>
             </div>
             <div class="form-group">
-                <label>Results (one per line)</label>
-                <textarea id="csResults" placeholder="Line 1: Result 1&#10;Line 2: Result 2&#10;Line 3: Result 3"></textarea>
+                <label for="csResults">Results (one per line)</label>
+                <textarea id="csResults" maxlength="3000" placeholder="One result per line"></textarea>
             </div>
             <div class="modal-buttons">
-                <button class="save-btn" onclick="saveNewCaseStudy()">Save</button>
-                <button class="cancel-btn" onclick="closeAddModal()">Cancel</button>
+                <button type="button" class="save-btn" id="saveCaseStudy">Save</button>
+                <button type="button" class="cancel-btn" id="cancelCaseStudy">Cancel</button>
             </div>
         </div>
     </div>
 
-    <script src="database.js"></script>
-    <script>
-        const defaultCaseStudies = [
-            {
-                company: "TechFlow Solutions",
-                industry: "IT Services",
-                challenge: "Managing large volumes of customer inquiries and automating repetitive development tasks.",
-                solution: "Implemented AI agents for customer support automation and code review assistance.",
-                results: [
-                    "60% reduction in support response time",
-                    "40% increase in development efficiency",
-                    "Customer satisfaction score improved to 92%"
-                ]
-            },
-            {
-                company: "DataVision Inc",
-                industry: "IT Consulting",
-                challenge: "Processing and analyzing massive datasets for client reports took weeks.",
-                solution: "Deployed AI analytics agents to automate data processing and report generation.",
-                results: [
-                    "Report generation time reduced from 3 weeks to 3 days",
-                    "85% improvement in data accuracy",
-                    "Enabled delivery of more client projects annually"
-                ]
-            },
-            {
-                company: "RetailHub Marketplace",
-                industry: "E-commerce & Retail",
-                challenge: "Inventory management and personalized customer recommendations at scale.",
-                solution: "Integrated AI agents for inventory optimization and personalized product recommendations.",
-                results: [
-                    "35% reduction in inventory holding costs",
-                    "28% increase in average order value",
-                    "Customer retention increased by 45%"
-                ]
-            },
-            {
-                company: "The Urban Bistro",
-                industry: "Food & Hospitality",
-                challenge: "Managing reservations, orders, and customer preferences manually.",
-                solution: "Deployed AI agents for reservation management and personalized dining recommendations.",
-                results: [
-                    "50% faster booking response time",
-                    "30% increase in repeat customers",
-                    "Reduced staff workload by 25%"
-                ]
-            },
-            {
-                company: "Justice & Associates Law Firm",
-                industry: "Legal Services",
-                challenge: "Document review and case research consumed 40% of billable hours.",
-                solution: "Implemented AI agents for document analysis and legal research automation.",
-                results: [
-                    "20% increase in billable hours per attorney",
-                    "Document review time cut in half",
-                    "Improved case preparation quality by 35%"
-                ]
-            }
-        ];
-
-        async function loadCaseStudies() {
-            let caseStudies = await loadFromDatabase('caseStudies', 'data') || { studies: defaultCaseStudies };
-
-            if (!caseStudies.studies || caseStudies.studies.length === 0) {
-                caseStudies.studies = defaultCaseStudies;
-                await saveToDatabase('caseStudies', 'data', caseStudies);
-            }
-
-            renderCaseStudies(caseStudies.studies);
-        }
-
-        function renderCaseStudies(studies) {
-            const grid = document.getElementById('caseStudiesGrid');
-            grid.innerHTML = '';
-
-            studies.forEach((study, index) => {
-                const card = document.createElement('div');
-                card.className = 'case-study-card';
-                card.innerHTML = `
-                    <h3>${study.company}</h3>
-                    <span class="case-study-tag">${study.industry}</span>
-                    <p><strong>Challenge:</strong> ${study.challenge}</p>
-                    <p><strong>Solution:</strong> ${study.solution}</p>
-                    <div class="case-study-results">
-                        <h4>Results</h4>
-                        <ul>
-                            ${study.results.map(r => `<li>${r}</li>`).join('')}
-                        </ul>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function openAddModal() {
-            document.getElementById('addModal').classList.add('show');
-        }
-
-        function closeAddModal() {
-            document.getElementById('addModal').classList.remove('show');
-            document.getElementById('csCompanyName').value = '';
-            document.getElementById('csIndustry').value = '';
-            document.getElementById('csChallenge').value = '';
-            document.getElementById('csSolution').value = '';
-            document.getElementById('csResults').value = '';
-        }
-
-        async function saveNewCaseStudy() {
-            const company = document.getElementById('csCompanyName').value;
-            const industry = document.getElementById('csIndustry').value;
-            const challenge = document.getElementById('csChallenge').value;
-            const solution = document.getElementById('csSolution').value;
-            const resultsText = document.getElementById('csResults').value;
-
-            if (!company || !industry || !challenge || !solution || !resultsText) {
-                alert('Please fill in all fields');
-                return;
-            }
-
-            const newStudy = {
-                company,
-                industry,
-                challenge,
-                solution,
-                results: resultsText.split('\n').filter(r => r.trim())
-            };
-
-            let caseStudies = await loadFromDatabase('caseStudies', 'data') || { studies: [] };
-            caseStudies.studies.push(newStudy);
-            await saveToDatabase('caseStudies', 'data', caseStudies);
-
-            renderCaseStudies(caseStudies.studies);
-            closeAddModal();
-        }
-
-        // Load case studies on page load
-        loadCaseStudies();
-    </script>
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <script src="auth.js"></script>
+    <script src="page-case-studies.js"></script>
 </body>
 </html>

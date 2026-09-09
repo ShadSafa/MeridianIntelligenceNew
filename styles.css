@@ -1125,3 +1125,117 @@ body {
         flex-direction: column;
     }
 }
+
+/* ===== ADMIN AUTH ===== */
+.auth-button {
+    background: transparent;
+    border: 1px solid var(--cyan-bright);
+    color: var(--cyan-bright);
+    padding: 7px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.auth-button:hover {
+    background: var(--cyan-bright);
+    color: var(--primary-navy);
+}
+
+/* Admin-only controls stay hidden until Identity reports a signed-in user. */
+[data-requires-auth] {
+    display: none;
+}
+
+body.is-admin [data-requires-auth] {
+    display: inline-block;
+}
+
+.admin-hint {
+    color: var(--text-light);
+    opacity: 0.75;
+    font-size: 0.9rem;
+    margin-top: 30px;
+}
+
+body.is-admin .admin-hint {
+    display: none;
+}
+
+/* ===== FORM NOTICES ===== */
+.form-notice {
+    display: none;
+    padding: 14px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 0.95rem;
+}
+
+.form-notice.is-visible {
+    display: block;
+}
+
+.form-notice.is-success {
+    background: rgba(0, 255, 136, 0.1);
+    border: 1px solid #00ff88;
+    color: #00ff88;
+}
+
+.form-notice.is-error {
+    background: rgba(255, 107, 107, 0.1);
+    border: 1px solid #ff6b6b;
+    color: #ff6b6b;
+}
+
+.form-notice.is-warning {
+    background: rgba(255, 209, 102, 0.1);
+    border: 1px solid #ffd166;
+    color: #ffd166;
+}
+
+@media (max-width: 768px) {
+    .nav-menu {
+        gap: 18px;
+    }
+
+    .auth-button {
+        padding: 6px 12px;
+        font-size: 0.78rem;
+    }
+}
+
+/* Navigation CTAs are real links, so they work without JS and satisfy CSP. */
+a.cta-button,
+a.btn,
+a.service-btn {
+    display: inline-block;
+    text-decoration: none;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+a.service-btn {
+    display: block;
+}
+
+/* Honeypot: off-screen for humans, irresistible to form-filling bots. */
+.visually-hidden {
+    position: absolute;
+    left: -5000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Logo wraps in an anchor on subpages; keep it looking like the logo. */
+.nav-logo a {
+    color: inherit;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}

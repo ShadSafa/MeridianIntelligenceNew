@@ -22,7 +22,7 @@
             font-size: 2.5rem;
         }
 
-        .contact-container p {
+        .contact-container > p {
             color: var(--text-light);
             margin-bottom: 30px;
         }
@@ -48,6 +48,7 @@
             border-radius: 8px;
             color: var(--white);
             font-family: inherit;
+            box-sizing: border-box;
         }
 
         .form-group input:focus,
@@ -77,30 +78,21 @@
             border: none;
             border-radius: 8px;
             font-size: 1.1rem;
+            font-family: inherit;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
             margin-top: 10px;
         }
 
-        .submit-btn:hover {
+        .submit-btn:hover:not(:disabled) {
             transform: translateY(-3px);
             box-shadow: 0 0 30px rgba(0, 217, 255, 0.5);
         }
 
-        .success-message {
-            display: none;
-            background: rgba(0, 255, 136, 0.1);
-            border: 1px solid #00ff88;
-            color: #00ff88;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .success-message.show {
-            display: block;
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         @media (max-width: 768px) {
@@ -120,21 +112,19 @@
     </style>
 </head>
 <body>
-    <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <span class="logo-icon">◆</span>
-                <a href="index.html" style="text-decoration: none; color: inherit;">
-                    <span>Meridian Intelligence</span>
-                </a>
+                <span class="logo-icon">&#9670;</span>
+                <a href="index.html"><span>Meridian Intelligence</span></a>
             </div>
             <ul class="nav-menu">
                 <li><a href="index.html#hero" class="nav-link">Home</a></li>
                 <li><a href="index.html#agents" class="nav-link">Agents</a></li>
                 <li><a href="index.html#services" class="nav-link">Services</a></li>
                 <li><a href="index.html#about" class="nav-link">About</a></li>
-                <li><a href="#contact" class="nav-link">Contact</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+                <li><button type="button" id="authButton" class="auth-button">Admin sign in</button></li>
             </ul>
         </div>
     </nav>
@@ -143,48 +133,51 @@
         <h1>Let's Get Started</h1>
         <p>Tell us about your business and how we can help you incorporate AI into your operations.</p>
 
-        <div class="success-message" id="successMessage">
-            ✓ Thank you! Your information has been saved. We'll be in touch soon!
-        </div>
+        <div class="form-notice" id="formNotice"></div>
 
-        <form id="contactForm">
+        <form id="contactForm" name="contact" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+            <input type="hidden" name="form-name" value="contact">
+            <p class="visually-hidden">
+                <label>Leave this empty: <input name="bot-field"></label>
+            </p>
+
             <div class="form-row">
                 <div class="form-group">
                     <label for="name">Name *</label>
-                    <input type="text" id="name" name="name" required>
+                    <input type="text" id="name" name="name" maxlength="120" required>
                 </div>
                 <div class="form-group">
                     <label for="email">Email *</label>
-                    <input type="email" id="email" name="email" required>
+                    <input type="email" id="email" name="email" maxlength="254" autocomplete="email" required>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
                     <label for="phone">Phone Number *</label>
-                    <input type="tel" id="phone" name="phone" required>
+                    <input type="tel" id="phone" name="phone" maxlength="40" required>
                 </div>
                 <div class="form-group">
                     <label for="company">Company *</label>
-                    <input type="text" id="company" name="company" required>
+                    <input type="text" id="company" name="company" maxlength="120" required>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
                     <label for="country">Country *</label>
-                    <input type="text" id="country" name="country" required>
+                    <input type="text" id="country" name="country" maxlength="80" required>
                 </div>
                 <div class="form-group">
                     <label for="city">City *</label>
-                    <input type="text" id="city" name="city" required>
+                    <input type="text" id="city" name="city" maxlength="80" required>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
                     <label for="industry">Industry *</label>
-                    <input type="text" id="industry" name="industry" placeholder="e.g., Technology, Retail, Healthcare" required>
+                    <input type="text" id="industry" name="industry" maxlength="80" placeholder="e.g., Technology, Retail, Healthcare" required>
                 </div>
                 <div class="form-group">
                     <label for="queryType">Type of Query *</label>
@@ -192,7 +185,7 @@
                         <option value="">Select...</option>
                         <option value="AI Implementation">AI Implementation for My Business</option>
                         <option value="AI Training">AI Training Programs</option>
-                        <option value="Consultancy">Consultancy & Analysis</option>
+                        <option value="Consultancy">Consultancy &amp; Analysis</option>
                         <option value="Demo">Portfolio Demo</option>
                         <option value="Other">Other</option>
                     </select>
@@ -201,44 +194,15 @@
 
             <div class="form-group">
                 <label for="message">Message *</label>
-                <textarea id="message" name="message" placeholder="Tell us more about your needs and how we can help..." required></textarea>
+                <textarea id="message" name="message" maxlength="4000" placeholder="Tell us more about your needs and how we can help..." required></textarea>
             </div>
 
             <button type="submit" class="submit-btn">Submit</button>
         </form>
     </div>
 
-    <script src="database.js"></script>
-    <script>
-        document.getElementById('contactForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const formData = {
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                company: document.getElementById('company').value,
-                country: document.getElementById('country').value,
-                city: document.getElementById('city').value,
-                industry: document.getElementById('industry').value,
-                queryType: document.getElementById('queryType').value,
-                message: document.getElementById('message').value,
-                timestamp: new Date().toISOString()
-            };
-
-            await saveToDatabase('leads', Date.now().toString(), formData);
-
-            // Show success message
-            document.getElementById('successMessage').classList.add('show');
-
-            // Reset form
-            this.reset();
-
-            // Hide success message after 5 seconds
-            setTimeout(() => {
-                document.getElementById('successMessage').classList.remove('show');
-            }, 5000);
-        });
-    </script>
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <script src="auth.js"></script>
+    <script src="netlify-form.js"></script>
 </body>
 </html>

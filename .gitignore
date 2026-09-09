@@ -1,2 +1,12 @@
 # Local Netlify folder
 .netlify
+
+# Dependencies (Netlify installs these during the build)
+node_modules
+
+# Local env
+.env
+.env.*
+
+# Test scratch
+tests/.tmp

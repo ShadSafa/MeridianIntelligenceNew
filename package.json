@@ -1,0 +1,12 @@
+{
+  "name": "meridian-intelligence-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Meridian Intelligence marketing site",
+  "scripts": {
+    "test": "node tests/functions.test.mjs"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}

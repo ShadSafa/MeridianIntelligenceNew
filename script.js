@@ -210,7 +210,9 @@ let scrollToTopBtn = document.querySelector('.scroll-to-top');
 if (!scrollToTopBtn) {
     scrollToTopBtn = document.createElement('button');
     scrollToTopBtn.classList.add('scroll-to-top');
-    scrollToTopBtn.innerHTML = '↑';
+    scrollToTopBtn.type = 'button';
+    scrollToTopBtn.setAttribute('aria-label', 'Scroll to top');
+    scrollToTopBtn.textContent = '↑';
     scrollToTopBtn.style.cssText = `
         position: fixed;
         bottom: 30px;
