@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Waitlist - Meridian Intelligence</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 120px 40px;
+        }
+
+        .admin-header {
+            margin-bottom: 40px;
+        }
+
+        .admin-header h1 {
+            color: var(--cyan-bright);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .admin-header p {
+            color: var(--text-light);
+        }
+
+        .admin-panel {
+            background: rgba(0, 38, 82, 0.4);
+            border: 2px solid rgba(0, 217, 255, 0.2);
+            border-radius: 12px;
+            padding: 30px;
+        }
+
+        .admin-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .admin-count {
+            color: var(--cyan-bright);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .refresh-btn {
+            background: rgba(0, 217, 255, 0.15);
+            border: 1px solid var(--cyan-bright);
+            color: var(--cyan-bright);
+            padding: 8px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover:not(:disabled) {
+            background: var(--cyan-bright);
+            color: var(--primary-navy);
+        }
+
+        .refresh-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 420px;
+        }
+
+        th {
+            text-align: left;
+            color: var(--cyan-bright);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 10px 12px;
+            border-bottom: 2px solid rgba(0, 217, 255, 0.3);
+        }
+
+        td {
+            color: var(--text-light);
+            padding: 12px;
+            border-bottom: 1px solid rgba(0, 217, 255, 0.1);
+            font-size: 0.95rem;
+        }
+
+        tbody tr:hover {
+            background: rgba(0, 217, 255, 0.05);
+        }
+
+        td.index {
+            color: rgba(224, 240, 255, 0.4);
+            width: 40px;
+        }
+
+        .empty-state {
+            color: var(--text-light);
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .signed-out {
+            background: rgba(0, 38, 82, 0.4);
+            border: 2px solid rgba(0, 217, 255, 0.2);
+            border-radius: 12px;
+            padding: 50px 30px;
+            text-align: center;
+        }
+
+        .signed-out h2 {
+            color: var(--cyan-bright);
+            margin-bottom: 12px;
+        }
+
+        .signed-out p {
+            color: var(--text-light);
+        }
+
+        body.is-admin .signed-out {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .admin-container {
+                padding: 80px 20px;
+            }
+
+            .admin-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .admin-panel {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-icon">&#9670;</span>
+                <a href="index.html"><span>Meridian Intelligence</span></a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html#hero" class="nav-link">Home</a></li>
+                <li><a href="case-studies.html" class="nav-link">Case Studies</a></li>
+                <li><a href="faqs.html" class="nav-link">FAQs</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+                <li><button type="button" id="authButton" class="auth-button">Admin sign in</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>Waitlist</h1>
+            <p>Everyone who has signed up for early access.</p>
+        </div>
+
+        <div class="form-notice" id="pageNotice"></div>
+
+        <div class="signed-out">
+            <h2>Sign in required</h2>
+            <p>Use <strong>Admin sign in</strong> above to view the waitlist.</p>
+        </div>
+
+        <div class="admin-panel" data-requires-auth="block">
+            <div class="admin-toolbar">
+                <span class="admin-count" id="count">Loading...</span>
+                <button type="button" class="refresh-btn" id="refresh">Refresh</button>
+            </div>
+
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Email</th>
+                            <th>Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rows"></tbody>
+                </table>
+            </div>
+
+            <p class="empty-state" id="emptyState" hidden>No one has joined the waitlist yet.</p>
+        </div>
+    </div>
+
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <script src="auth.js"></script>
+    <script src="page-admin.js"></script>
+</body>
+</html>

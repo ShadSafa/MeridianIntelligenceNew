@@ -1239,3 +1239,8 @@ a.service-btn {
     display: inline-flex;
     align-items: center;
 }
+
+/* Block-level admin panels; the base rule above reveals inline-block. */
+body.is-admin [data-requires-auth="block"] {
+    display: block;
+}
