@@ -167,7 +167,9 @@ export const handler = async (event, context) => {
   let store;
   try {
     store = getStore(STORE);
-  } catch {
+  } catch (error) {
+    // Logged rather than swallowed: without this the 503 is undiagnosable.
+    console.error('getStore failed:', error && error.message);
     return json(503, { error: 'Content storage is unavailable.' });
   }
 
