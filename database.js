@@ -1,7 +1,7 @@
 // IndexedDB setup and utility functions for Meridian Intelligence
 
 const DB_NAME = 'MeridianIntelligence';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let db = null;
 
@@ -20,7 +20,7 @@ async function initDatabase() {
             db = event.target.result;
 
             // Create object stores if they don't exist
-            const stores = ['leads', 'caseStudies', 'faqs', 'demoSchedules'];
+            const stores = ['leads', 'caseStudies', 'faqs', 'demoSchedules', 'waitlist'];
 
             stores.forEach(storeName => {
                 if (!db.objectStoreNames.contains(storeName)) {
