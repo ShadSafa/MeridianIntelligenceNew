@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Demo - Meridian Intelligence</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .schedule-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 120px 40px;
+        }
+
+        .schedule-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .schedule-header h1 {
+            color: var(--cyan-bright);
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .schedule-header p {
+            color: var(--text-light);
+            font-size: 1.2rem;
+        }
+
+        .services-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .service-tab {
+            padding: 12px 25px;
+            background: rgba(0, 38, 82, 0.4);
+            border: 2px solid rgba(0, 217, 255, 0.2);
+            color: var(--text-light);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .service-tab:hover {
+            border-color: var(--cyan-bright);
+        }
+
+        .service-tab.active {
+            background: var(--cyan-bright);
+            color: var(--primary-navy);
+            border-color: var(--cyan-bright);
+        }
+
+        .service-content {
+            display: none;
+            background: rgba(0, 38, 82, 0.4);
+            border: 2px solid rgba(0, 217, 255, 0.2);
+            border-radius: 12px;
+            padding: 40px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .service-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .service-content h2 {
+            color: var(--cyan-bright);
+            margin-bottom: 15px;
+        }
+
+        .service-content > p:first-of-type {
+            color: var(--text-light);
+            margin-bottom: 30px;
+            line-height: 1.7;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--cyan-bright);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 26, 51, 0.6);
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            border-radius: 8px;
+            color: var(--white);
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--cyan-bright);
+            box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--cyan-bright) 0%, var(--cyan-light) 100%);
+            color: var(--primary-navy);
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 30px rgba(0, 217, 255, 0.5);
+        }
+
+        .success-message {
+            display: none;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .schedule-container {
+                padding: 80px 20px;
+            }
+
+            .schedule-header h1 {
+                font-size: 2rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .services-tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-icon">◆</span>
+                <a href="index.html" style="text-decoration: none; color: inherit;">
+                    <span>Meridian Intelligence</span>
+                </a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html#hero" class="nav-link">Home</a></li>
+                <li><a href="index.html#agents" class="nav-link">Agents</a></li>
+                <li><a href="index.html#services" class="nav-link">Services</a></li>
+                <li><a href="index.html#about" class="nav-link">About</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="schedule-container">
+        <div class="schedule-header">
+            <h1>Schedule a Demo</h1>
+            <p>Choose the service you're interested in and book your personalized demo</p>
+        </div>
+
+        <div class="services-tabs">
+            <button class="service-tab active" onclick="switchTab('portfolio')">Portfolio Demo</button>
+            <button class="service-tab" onclick="switchTab('training')">AI Training Session</button>
+            <button class="service-tab" onclick="switchTab('consultancy')">Consultancy Review</button>
+        </div>
+
+        <!-- Portfolio Demo -->
+        <div class="service-content active" id="portfolio">
+            <h2>Portfolio Demo</h2>
+            <p>See our current AI agent portfolio in action. We'll show you how our agents work, demonstrate real-world use cases similar to your business, and discuss how we can customize them for your needs.</p>
+
+            <div class="success-message" id="successMessage1">
+                ✓ Demo scheduled! We'll send you a calendar invite soon.
+            </div>
+
+            <form onsubmit="submitDemo(event, 'portfolio')">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name1">Your Name *</label>
+                        <input type="text" id="name1" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email1">Email *</label>
+                        <input type="email" id="email1" name="email" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone1">Phone *</label>
+                        <input type="tel" id="phone1" name="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="company1">Company *</label>
+                        <input type="text" id="company1" name="company" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="preferredDate1">Preferred Date & Time *</label>
+                    <input type="datetime-local" id="preferredDate1" name="preferredDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes1">Additional Notes</label>
+                    <textarea id="notes1" name="notes" placeholder="Tell us what aspects you're most interested in..."></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">Schedule Demo</button>
+            </form>
+        </div>
+
+        <!-- AI Training -->
+        <div class="service-content" id="training">
+            <h2>AI Training Session</h2>
+            <p>Book a private training session to learn about AI fundamentals, how AI agents work, and how to integrate them into your business operations. Our experts will tailor the training to your team's background and industry.</p>
+
+            <div class="success-message" id="successMessage2">
+                ✓ Training session booked! We'll send you details soon.
+            </div>
+
+            <form onsubmit="submitDemo(event, 'training')">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name2">Your Name *</label>
+                        <input type="text" id="name2" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email2">Email *</label>
+                        <input type="email" id="email2" name="email" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone2">Phone *</label>
+                        <input type="tel" id="phone2" name="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="company2">Company *</label>
+                        <input type="text" id="company2" name="company" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="teamSize">Team Size *</label>
+                    <select id="teamSize" name="teamSize" required>
+                        <option value="">Select...</option>
+                        <option value="1-5">1-5 people</option>
+                        <option value="5-10">5-10 people</option>
+                        <option value="10-20">10-20 people</option>
+                        <option value="20+">20+ people</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="preferredDate2">Preferred Date & Time *</label>
+                    <input type="datetime-local" id="preferredDate2" name="preferredDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes2">What would you like to focus on?</label>
+                    <textarea id="notes2" name="notes" placeholder="e.g., AI fundamentals, specific use cases, best practices..."></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">Book Training</button>
+            </form>
+        </div>
+
+        <!-- Consultancy -->
+        <div class="service-content" id="consultancy">
+            <h2>Consultancy & Analysis</h2>
+            <p>Schedule a consultancy session where our AI experts will analyze your current business operations, identify areas where AI can add value, and develop a customized implementation plan tailored to your needs.</p>
+
+            <div class="success-message" id="successMessage3">
+                ✓ Consultancy session scheduled! We'll prepare your analysis.
+            </div>
+
+            <form onsubmit="submitDemo(event, 'consultancy')">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name3">Your Name *</label>
+                        <input type="text" id="name3" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email3">Email *</label>
+                        <input type="email" id="email3" name="email" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone3">Phone *</label>
+                        <input type="tel" id="phone3" name="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="company3">Company *</label>
+                        <input type="text" id="company3" name="company" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="industry">Industry *</label>
+                    <input type="text" id="industry" name="industry" placeholder="e.g., Retail, Technology, Legal Services" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="companySize">Company Size *</label>
+                    <select id="companySize" name="companySize" required>
+                        <option value="">Select...</option>
+                        <option value="1-5">1-5 employees</option>
+                        <option value="5-20">5-20 employees</option>
+                        <option value="20-50">20-50 employees</option>
+                        <option value="50+">50+ employees</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="preferredDate3">Preferred Date & Time *</label>
+                    <input type="datetime-local" id="preferredDate3" name="preferredDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes3">Tell us about your business goals</label>
+                    <textarea id="notes3" name="notes" placeholder="What challenges are you facing? What are your goals for implementing AI?"></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">Schedule Consultancy</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="database.js"></script>
+    <script>
+        function switchTab(tabName) {
+            // Hide all content
+            document.querySelectorAll('.service-content').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Remove active class from all tabs
+            document.querySelectorAll('.service-tab').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Show selected content and mark tab as active
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function submitDemo(e, type) {
+            e.preventDefault();
+
+            // Get form data based on type
+            let formData;
+            if (type === 'portfolio') {
+                formData = {
+                    type: 'portfolio',
+                    name: document.getElementById('name1').value,
+                    email: document.getElementById('email1').value,
+                    phone: document.getElementById('phone1').value,
+                    company: document.getElementById('company1').value,
+                    preferredDate: document.getElementById('preferredDate1').value,
+                    notes: document.getElementById('notes1').value,
+                    timestamp: new Date().toISOString()
+                };
+            } else if (type === 'training') {
+                formData = {
+                    type: 'training',
+                    name: document.getElementById('name2').value,
+                    email: document.getElementById('email2').value,
+                    phone: document.getElementById('phone2').value,
+                    company: document.getElementById('company2').value,
+                    teamSize: document.getElementById('teamSize').value,
+                    preferredDate: document.getElementById('preferredDate2').value,
+                    notes: document.getElementById('notes2').value,
+                    timestamp: new Date().toISOString()
+                };
+            } else if (type === 'consultancy') {
+                formData = {
+                    type: 'consultancy',
+                    name: document.getElementById('name3').value,
+                    email: document.getElementById('email3').value,
+                    phone: document.getElementById('phone3').value,
+                    company: document.getElementById('company3').value,
+                    industry: document.getElementById('industry').value,
+                    companySize: document.getElementById('companySize').value,
+                    preferredDate: document.getElementById('preferredDate3').value,
+                    notes: document.getElementById('notes3').value,
+                    timestamp: new Date().toISOString()
+                };
+            }
+
+            // Save to database
+            await saveToDatabase('demoSchedules', Date.now().toString(), formData);
+
+            // Show success message
+            document.getElementById(`successMessage${type === 'portfolio' ? '1' : type === 'training' ? '2' : '3'}`).classList.add('show');
+
+            // Reset form
+            e.target.reset();
+
+            // Hide success message after 5 seconds
+            setTimeout(() => {
+                document.getElementById(`successMessage${type === 'portfolio' ? '1' : type === 'training' ? '2' : '3'}`).classList.remove('show');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
