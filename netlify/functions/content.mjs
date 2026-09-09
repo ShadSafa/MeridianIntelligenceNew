@@ -162,7 +162,9 @@ function publicView(content) {
 export default async (request) => {
   let store;
   try {
-    store = getStore(STORE);
+    // Strong consistency: adding two items in quick succession does a
+    // read-modify-write, and a stale read would silently drop the earlier one.
+    store = getStore({ name: STORE, consistency: 'strong' });
   } catch (error) {
     console.error('getStore failed:', error && error.message);
     return jsonResponse(503, { error: 'Content storage is unavailable.' });

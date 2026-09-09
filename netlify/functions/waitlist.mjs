@@ -10,7 +10,10 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export default async (request, context) => {
   let store;
   try {
-    store = getStore(STORE);
+    // Strong consistency: both the duplicate check and the rate counter are
+    // read-after-write within milliseconds, and the default eventual reads come
+    // back stale, which silently defeats them.
+    store = getStore({ name: STORE, consistency: 'strong' });
   } catch (error) {
     console.error('getStore failed:', error && error.message);
     return jsonResponse(503, { error: 'Waitlist storage is unavailable.' });
@@ -42,7 +45,7 @@ export default async (request, context) => {
   // Checked before the body is even parsed, so a flood is turned away as
   // cheaply as possible.
   try {
-    const rateStore = getStore(RATE_STORE);
+    const rateStore = getStore({ name: RATE_STORE, consistency: 'strong' });
     if (await exceedsLimit(rateStore, clientIp(request, context))) {
       return new Response(
         JSON.stringify({ error: 'Too many attempts. Please wait a minute and try again.' }),

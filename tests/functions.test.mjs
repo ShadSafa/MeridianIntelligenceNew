@@ -8,6 +8,7 @@ import { readFile, writeFile, mkdir, rm } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 import { VALID_TOKEN } from './fake-identity.mjs';
+import { requestedOptions } from './fake-blobs.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FUNCTIONS = path.join(HERE, '..', 'netlify', 'functions');
@@ -190,6 +191,24 @@ console.log('\n=== waitlist: rate limiting ===');
   const emails = (await listed.json()).entries.map((e) => e.email);
   check('throttled signup was not stored', emails.includes('sneaky@example.com'), false);
   check('counters do not pollute the waitlist store', emails.includes('someone@example.com'), true);
+}
+
+console.log('\n=== blob store configuration ===');
+{
+  // Real Blobs reads are eventually consistent by default, which silently
+  // breaks read-after-write logic like dedupe and rate counting. The in-memory
+  // fake cannot reproduce that, so assert the option is asked for.
+  check('at least one store was opened', requestedOptions.length > 0, true);
+  check(
+    'every store requests strong consistency',
+    requestedOptions.every((o) => o && o.consistency === 'strong'),
+    true
+  );
+  check(
+    'rate counters live in a separate store',
+    requestedOptions.some((o) => o.name === 'meridian-waitlist-rate'),
+    true
+  );
 }
 
 await rm(TMP, { recursive: true, force: true });
