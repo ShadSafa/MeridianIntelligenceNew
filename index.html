@@ -315,24 +315,22 @@
                 <!-- Waitlist Email Form -->
                 <div class="waitlist-form-container fade-in-up delay-3">
                     <p class="waitlist-label">Get notified when we launch:</p>
-                    <form 
-                        action="https://YOUR_MAILCHIMP_URL_HERE" 
-                        method="POST" 
-                        target="_blank" 
+                    <div class="waitlist-success-message" id="waitlistSuccess" style="display: none; color: #00ff88; margin-bottom: 15px;">
+                        ✓ Thank you! You've been added to the waitlist.
+                    </div>
+                    <form
+                        id="waitlistForm"
                         class="waitlist-form"
                         novalidate
                     >
-                        <input 
-                            type="email" 
-                            name="EMAIL" 
-                            class="waitlist-input" 
-                            placeholder="you@company.com" 
+                        <input
+                            type="email"
+                            id="waitlistEmail"
+                            name="email"
+                            class="waitlist-input"
+                            placeholder="you@company.com"
                             required
                         />
-                        <!-- Honeypot (anti-spam) -->
-                        <div style="position: absolute; left: -5000px;" aria-hidden="true">
-                            <input type="text" name="b_xxxxxx_xxxxxx" tabindex="-1" value="">
-                        </div>
                         <button type="submit" class="waitlist-button">Join the Waitlist</button>
                     </form>
                 </div>
@@ -404,6 +402,28 @@
         </div>
     </footer>
 
+    <script src="database.js"></script>
     <script src="script.js"></script>
+    <script>
+        document.getElementById('waitlistForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('waitlistEmail').value;
+
+            const data = {
+                email: email,
+                timestamp: new Date().toISOString()
+            };
+
+            await saveToDatabase('waitlist', Date.now().toString(), data);
+
+            document.getElementById('waitlistSuccess').style.display = 'block';
+            this.reset();
+
+            setTimeout(() => {
+                document.getElementById('waitlistSuccess').style.display = 'none';
+            }, 5000);
+        });
+    </script>
 </body>
 </html>
