@@ -15,13 +15,16 @@ const TMP = path.join(HERE, '.tmp');
 
 const FAKE_BLOBS = pathToFileURL(path.join(HERE, 'fake-blobs.mjs')).href;
 const FAKE_IDENTITY = pathToFileURL(path.join(HERE, 'fake-identity.mjs')).href;
+// Not faked: the limiter is what these tests are checking.
+const REAL_RATE_LIMIT = pathToFileURL(path.join(HERE, '..', 'netlify', 'lib', 'rate-limit.mjs')).href;
 
-// Loads a function with its two external dependencies swapped for local fakes.
-// Every other line is the deployed code, unmodified.
+// Loads a function with Blobs and Identity swapped for local fakes. Every other
+// line is the deployed code, unmodified.
 async function loadFunction(name) {
   const source = (await readFile(path.join(FUNCTIONS, name), 'utf8'))
     .replace("from '@netlify/blobs'", `from ${JSON.stringify(FAKE_BLOBS)}`)
-    .replace("from '../lib/identity.mjs'", `from ${JSON.stringify(FAKE_IDENTITY)}`);
+    .replace("from '../lib/identity.mjs'", `from ${JSON.stringify(FAKE_IDENTITY)}`)
+    .replace("from '../lib/rate-limit.mjs'", `from ${JSON.stringify(REAL_RATE_LIMIT)}`);
 
   await mkdir(TMP, { recursive: true });
   const target = path.join(TMP, name);
@@ -42,6 +45,15 @@ const anonymous = (body) =>
   new Request(URL_BASE + 'x', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+
+// Without a client IP the limiter has nothing to key on and stays out of the
+// way, which is what keeps the other tests unaffected by it.
+const fromIp = (ip, body) =>
+  new Request(URL_BASE + 'x', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-nf-client-connection-ip': ip },
     body: JSON.stringify(body)
   });
 
@@ -148,6 +160,36 @@ console.log('\n=== waitlist: case-insensitive dedupe ===');
   const body = await listed.json();
   check('honeypot entry was not stored', body.count, 2);
   check('original casing preserved', body.entries.some((e) => e.email === 'Shadi@Example.COM'), true);
+}
+
+console.log('\n=== waitlist: rate limiting ===');
+{
+  const fn = await loadFunction('waitlist.mjs');
+
+  // Ten requests inside the window are allowed; the eleventh is not.
+  const first = [];
+  for (let i = 0; i < 10; i++) {
+    first.push((await fn(fromIp('203.0.113.7', { email: `probe${i}` }))).status);
+  }
+  check('first 10 from an IP are not throttled', first.every((s) => s === 400), true);
+
+  const eleventh = await fn(fromIp('203.0.113.7', { email: 'probe10' }));
+  check('11th request is throttled', eleventh.status, 429);
+  check('throttle response sets Retry-After', eleventh.headers.get('Retry-After'), '60');
+  check('throttle response is JSON', (await eleventh.json()).error.includes('Too many'), true);
+
+  // The limit is per client, not global.
+  const other = await fn(fromIp('198.51.100.4', { email: 'someone@example.com' }));
+  check('a different IP is unaffected', other.status, 201);
+
+  // A throttled caller cannot slip a real signup through.
+  const blocked = await fn(fromIp('203.0.113.7', { email: 'sneaky@example.com' }));
+  check('throttled caller cannot write', blocked.status, 429);
+
+  const listed = await fn(getAs(VALID_TOKEN));
+  const emails = (await listed.json()).entries.map((e) => e.email);
+  check('throttled signup was not stored', emails.includes('sneaky@example.com'), false);
+  check('counters do not pollute the waitlist store', emails.includes('someone@example.com'), true);
 }
 
 await rm(TMP, { recursive: true, force: true });

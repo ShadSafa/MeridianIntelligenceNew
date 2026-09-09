@@ -1,11 +1,13 @@
 import { getStore } from '@netlify/blobs';
 import { verifyUser, jsonResponse } from '../lib/identity.mjs';
+import { clientIp, exceedsLimit, LIMIT, WINDOW_SECONDS } from '../lib/rate-limit.mjs';
 
 const STORE = 'meridian-waitlist';
+const RATE_STORE = 'meridian-waitlist-rate';
 const MAX_EMAIL_LENGTH = 254;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export default async (request) => {
+export default async (request, context) => {
   let store;
   try {
     store = getStore(STORE);
@@ -35,6 +37,28 @@ export default async (request) => {
 
   if (request.method !== 'POST') {
     return new Response(null, { status: 405, headers: { Allow: 'GET, POST' } });
+  }
+
+  // Checked before the body is even parsed, so a flood is turned away as
+  // cheaply as possible.
+  try {
+    const rateStore = getStore(RATE_STORE);
+    if (await exceedsLimit(rateStore, clientIp(request, context))) {
+      return new Response(
+        JSON.stringify({ error: 'Too many attempts. Please wait a minute and try again.' }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store',
+            'Retry-After': String(WINDOW_SECONDS),
+            'X-RateLimit-Limit': String(LIMIT)
+          }
+        }
+      );
+    }
+  } catch (error) {
+    console.error('rate store unavailable:', error && error.message);
   }
 
   let payload;
@@ -69,18 +93,5 @@ export default async (request) => {
   } catch (error) {
     console.error('write failed:', error && error.message);
     return jsonResponse(500, { error: 'Could not save your email. Please try again.' });
-  }
-};
-
-// Enforced by Netlify at the edge, before this function is invoked, so a flood
-// costs neither invocations nor storage. Ten per minute per IP is far more than
-// a person joining a waitlist needs, while making scripted signup floods
-// impractical. Excess requests get a 429.
-export const config = {
-  rateLimit: {
-    windowSize: 60,
-    windowLimit: 10,
-    algorithm: 'sliding_window',
-    aggregateBy: ['domain', 'ip']
   }
 };

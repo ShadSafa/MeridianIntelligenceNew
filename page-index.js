@@ -46,9 +46,7 @@
       if (response.status === 409) {
         show(body.error || 'This email is already on the waitlist.', 'warning');
       } else if (response.status === 429) {
-        // Netlify's rate limiter answers before the function runs, so this
-        // response is not one of ours and carries no JSON body.
-        show('Too many attempts. Please wait a minute and try again.', 'warning');
+        show(body.error || 'Too many attempts. Please wait a minute and try again.', 'warning');
       } else if (!response.ok) {
         show(body.error || 'Something went wrong. Please try again.', 'error');
       } else {
