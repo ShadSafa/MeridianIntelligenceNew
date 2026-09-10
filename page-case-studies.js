@@ -6,6 +6,8 @@
   const pageNotice = document.getElementById('pageNotice');
   const modalNotice = document.getElementById('modalNotice');
   const modal = document.getElementById('addModal');
+  const modalTitle = document.getElementById('modalTitle');
+  const saveButton = document.getElementById('saveCaseStudy');
 
   const fields = {
     company: document.getElementById('csCompanyName'),
@@ -15,6 +17,9 @@
     results: document.getElementById('csResults')
   };
 
+  // null while adding; holds the item id while editing.
+  let editingId = null;
+
   function showNotice(node, message, kind) {
     node.textContent = message;
     node.className = 'form-notice is-visible is-' + kind;
@@ -22,6 +27,13 @@
 
   function hideNotice(node) {
     node.className = 'form-notice';
+  }
+
+  function flash(message, kind) {
+    showNotice(pageNotice, message, kind);
+    setTimeout(function () {
+      hideNotice(pageNotice);
+    }, 4000);
   }
 
   function el(tag, className, text) {
@@ -57,6 +69,24 @@
     results.appendChild(list);
     card.appendChild(results);
 
+    const controls = el('div', 'item-admin');
+
+    const edit = el('button', 'btn-edit', 'Edit');
+    edit.type = 'button';
+    edit.addEventListener('click', function () {
+      openModal(study);
+    });
+
+    const remove = el('button', 'btn-delete', 'Delete');
+    remove.type = 'button';
+    remove.addEventListener('click', function () {
+      deleteStudy(study, remove);
+    });
+
+    controls.appendChild(edit);
+    controls.appendChild(remove);
+    card.appendChild(controls);
+
     return card;
   }
 
@@ -84,18 +114,54 @@
     }
   }
 
-  function openModal() {
+  function openModal(study) {
     hideNotice(modalNotice);
+    editingId = study ? study.id : null;
+    modalTitle.textContent = study ? 'Edit Case Study' : 'Add New Case Study';
+    saveButton.textContent = study ? 'Save changes' : 'Save';
+
+    fields.company.value = study ? study.company : '';
+    fields.industry.value = study ? study.industry : '';
+    fields.challenge.value = study ? study.challenge : '';
+    fields.solution.value = study ? study.solution : '';
+    fields.results.value = study ? (study.results || []).join('\n') : '';
+
     modal.classList.add('show');
     fields.company.focus();
   }
 
   function closeModal() {
     modal.classList.remove('show');
+    editingId = null;
     Object.values(fields).forEach(function (field) {
       field.value = '';
     });
     hideNotice(modalNotice);
+  }
+
+  async function send(method, payload) {
+    const token = await window.MeridianAuth.token();
+    if (!token) return { ok: false, error: 'Your session expired. Please sign in again.' };
+
+    try {
+      const response = await fetch(API, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const body = await response.json().catch(function () {
+        return {};
+      });
+
+      if (!response.ok) return { ok: false, error: body.error || 'Could not save the case study.' };
+      return { ok: true, data: body };
+    } catch {
+      return { ok: false, error: 'Network error. Please try again.' };
+    }
   }
 
   async function save() {
@@ -120,44 +186,43 @@
       return;
     }
 
-    const token = await window.MeridianAuth.token();
-    if (!token) {
-      showNotice(modalNotice, 'Your session expired. Please sign in again.', 'error');
+    const editing = editingId !== null;
+    if (editing) payload.id = editingId;
+
+    saveButton.disabled = true;
+    const result = await send(editing ? 'PUT' : 'POST', payload);
+    saveButton.disabled = false;
+
+    if (!result.ok) {
+      showNotice(modalNotice, result.error, 'error');
       return;
     }
 
-    try {
-      const response = await fetch(API, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + token
-        },
-        body: JSON.stringify(payload)
-      });
-
-      const body = await response.json().catch(function () {
-        return {};
-      });
-
-      if (!response.ok) {
-        showNotice(modalNotice, body.error || 'Could not save the case study.', 'error');
-        return;
-      }
-
-      render(body.caseStudies || []);
-      closeModal();
-      showNotice(pageNotice, 'Case study added.', 'success');
-      setTimeout(function () {
-        hideNotice(pageNotice);
-      }, 4000);
-    } catch {
-      showNotice(modalNotice, 'Network error. Please try again.', 'error');
-    }
+    render(result.data.caseStudies || []);
+    closeModal();
+    flash(editing ? 'Case study updated.' : 'Case study added.', 'success');
   }
 
-  document.getElementById('openAddModal').addEventListener('click', openModal);
-  document.getElementById('saveCaseStudy').addEventListener('click', save);
+  async function deleteStudy(study, button) {
+    if (!window.confirm('Delete this case study?\n\n' + study.company)) return;
+
+    button.disabled = true;
+    const result = await send('DELETE', { type: 'caseStudy', id: study.id });
+    button.disabled = false;
+
+    if (!result.ok) {
+      flash(result.error, 'error');
+      return;
+    }
+
+    render(result.data.caseStudies || []);
+    flash('Case study deleted.', 'success');
+  }
+
+  document.getElementById('openAddModal').addEventListener('click', function () {
+    openModal(null);
+  });
+  saveButton.addEventListener('click', save);
   document.getElementById('cancelCaseStudy').addEventListener('click', closeModal);
 
   modal.addEventListener('click', function (event) {

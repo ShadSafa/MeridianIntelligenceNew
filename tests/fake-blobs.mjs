@@ -11,6 +11,11 @@ const stores = new Map();
 
 export const requestedOptions = [];
 
+// Sections share this module, so each one clears the state it depends on.
+export function reset() {
+  stores.clear();
+}
+
 export function getStore(nameOrOptions) {
   const options = typeof nameOrOptions === 'string' ? { name: nameOrOptions } : nameOrOptions;
   requestedOptions.push(options);

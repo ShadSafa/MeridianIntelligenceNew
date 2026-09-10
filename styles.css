@@ -1244,3 +1244,101 @@ a.service-btn {
 body.is-admin [data-requires-auth="block"] {
     display: block;
 }
+
+/* ===== PER-ITEM ADMIN CONTROLS ===== */
+.item-admin {
+    display: none;
+    gap: 8px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(0, 217, 255, 0.15);
+}
+
+body.is-admin .item-admin {
+    display: flex;
+}
+
+.item-admin button {
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.item-admin button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-edit {
+    background: rgba(0, 217, 255, 0.15);
+    border: 1px solid var(--cyan-bright);
+    color: var(--cyan-bright);
+}
+
+.btn-edit:hover:not(:disabled) {
+    background: var(--cyan-bright);
+    color: var(--primary-navy);
+}
+
+.btn-delete {
+    background: rgba(255, 107, 107, 0.12);
+    border: 1px solid #ff6b6b;
+    color: #ff6b6b;
+}
+
+.btn-delete:hover:not(:disabled) {
+    background: #ff6b6b;
+    color: var(--primary-navy);
+}
+
+/* ===== AGENT BACKDROP =====
+   A single agent sits behind the content on the standalone pages. Kept faint
+   and non-interactive so it never competes with text; dropped on narrow
+   screens where there is no room for it beside the content. */
+.page-bg::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 55%;
+    height: 100vh;
+    background-repeat: no-repeat;
+    background-position: right center;
+    background-size: contain;
+    opacity: 0.13;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.page-bg::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(90deg, var(--primary-navy) 0%, rgba(0, 26, 51, 0.75) 45%, rgba(0, 26, 51, 0.1) 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.page-bg .navbar,
+.page-bg > div,
+.page-bg > footer {
+    position: relative;
+    z-index: 1;
+}
+
+.page-bg--contact::before { background-image: url('robot-pink.png'); }
+.page-bg--cases::before { background-image: url('robot-green.png'); }
+.page-bg--faqs::before { background-image: url('robot-orange.png'); }
+.page-bg--demo::before { background-image: url('robot-blue.png'); }
+.page-bg--admin::before { background-image: url('robot-hero.png'); }
+
+@media (max-width: 900px) {
+    .page-bg::before,
+    .page-bg::after {
+        display: none;
+    }
+}

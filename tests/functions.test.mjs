@@ -8,7 +8,7 @@ import { readFile, writeFile, mkdir, rm } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 import { VALID_TOKEN } from './fake-identity.mjs';
-import { requestedOptions } from './fake-blobs.mjs';
+import { requestedOptions, reset } from './fake-blobs.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FUNCTIONS = path.join(HERE, '..', 'netlify', 'functions');
@@ -86,6 +86,7 @@ function check(label, actual, expected) {
 
 console.log('\n=== content: only admins may write ===');
 {
+  reset();
   const fn = await loadFunction('content.mjs');
 
   const seeded = await fn(getAs());
@@ -117,8 +118,12 @@ console.log('\n=== content: only admins may write ===');
   check('new FAQ visible to everyone', after.faqs[5].question, 'Real question?');
   check('admin email never leaves the server', JSON.stringify(after).includes('addedBy'), false);
 
+  // DELETE is a supported method now, so it is auth that turns this away.
   const del = await fn(new Request(URL_BASE + 'x', { method: 'DELETE' }));
-  check('DELETE not allowed', del.status, 405);
+  check('DELETE without auth is rejected', del.status, 401);
+
+  const patch = await fn(new Request(URL_BASE + 'x', { method: 'PATCH' }));
+  check('unsupported method is 405', patch.status, 405);
 
   // Ordinary punctuation must survive the control-character sanitiser.
   const punct = await fn(asAdmin({
@@ -134,8 +139,99 @@ console.log('\n=== content: only admins may write ===');
   check('hyphens and ampersands intact', punctBody.caseStudies[5].company, 'E-commerce & Co.');
 }
 
+console.log('\n=== content: admin edit and delete ===');
+{
+  reset();
+  const fn = await loadFunction('content.mjs');
+
+  const request = (method, body, token) =>
+    new Request(URL_BASE + 'x', {
+      method,
+      headers: Object.assign(
+        { 'Content-Type': 'application/json' },
+        token ? { Authorization: token } : {}
+      ),
+      body: JSON.stringify(body)
+    });
+
+  const seeded = await (await fn(getAs())).json();
+  check('seed items are given ids', seeded.faqs.every((f) => typeof f.id === 'string' && f.id), true);
+  check('ids are unique', new Set(seeded.faqs.map((f) => f.id)).size, seeded.faqs.length);
+
+  const target = seeded.faqs[0];
+
+  // Edits must be authenticated.
+  check(
+    'PUT rejected when signed out',
+    (await fn(request('PUT', { type: 'faq', id: target.id, question: 'Hijacked', answer: 'Hijacked' }))).status,
+    401
+  );
+  check(
+    'DELETE rejected when signed out',
+    (await fn(request('DELETE', { type: 'faq', id: target.id }))).status,
+    401
+  );
+  check(
+    'DELETE rejected with forged token',
+    (await fn(request('DELETE', { type: 'faq', id: target.id }, 'Bearer forged'))).status,
+    401
+  );
+
+  const untouched = await (await fn(getAs())).json();
+  check('nothing changed after rejected writes', untouched.faqs.length, 5);
+  check('target FAQ intact', untouched.faqs[0].question, target.question);
+
+  // Authenticated edit.
+  const edited = await fn(request('PUT', {
+    type: 'faq',
+    id: target.id,
+    question: 'Edited question?',
+    answer: 'Edited answer.'
+  }, VALID_TOKEN));
+  check('PUT accepted for admin', edited.status, 200);
+  const editedBody = await edited.json();
+  check('edit applied', editedBody.faqs[0].question, 'Edited question?');
+  check('edit keeps the same id', editedBody.faqs[0].id, target.id);
+  check('edit does not change the count', editedBody.faqs.length, 5);
+  check('editor email not exposed', JSON.stringify(editedBody).includes('updatedBy'), false);
+
+  check(
+    'PUT on unknown id is 404',
+    (await fn(request('PUT', { type: 'faq', id: 'no-such-id', question: 'q', answer: 'a' }, VALID_TOKEN))).status,
+    404
+  );
+  check(
+    'DELETE on unknown id is 404',
+    (await fn(request('DELETE', { type: 'faq', id: 'no-such-id' }, VALID_TOKEN))).status,
+    404
+  );
+  check(
+    'PUT with invalid fields is rejected',
+    (await fn(request('PUT', { type: 'faq', id: target.id, question: '', answer: 'a' }, VALID_TOKEN))).status,
+    400
+  );
+
+  // Authenticated delete.
+  const deleted = await fn(request('DELETE', { type: 'faq', id: target.id }, VALID_TOKEN));
+  check('DELETE accepted for admin', deleted.status, 200);
+  const afterDelete = await deleted.json();
+  check('item removed', afterDelete.faqs.length, 4);
+  check('correct item removed', afterDelete.faqs.some((f) => f.id === target.id), false);
+
+  // Deleting one collection must not disturb the other.
+  check('case studies untouched by FAQ delete', afterDelete.caseStudies.length, 5);
+
+  const study = afterDelete.caseStudies[0];
+  const studyDeleted = await fn(request('DELETE', { type: 'caseStudy', id: study.id }, VALID_TOKEN));
+  check('case study delete works', studyDeleted.status, 200);
+  const finalState = await studyDeleted.json();
+  check('case study removed', finalState.caseStudies.length, 4);
+  check('FAQs untouched by case study delete', finalState.faqs.length, 4);
+}
+
 console.log('\n=== waitlist: case-insensitive dedupe ===');
 {
+  reset();
   const fn = await loadFunction('waitlist.mjs');
 
   check('first signup accepted', (await fn(anonymous({ email: 'Shadi@Example.COM' }))).status, 201);
@@ -165,6 +261,7 @@ console.log('\n=== waitlist: case-insensitive dedupe ===');
 
 console.log('\n=== waitlist: rate limiting ===');
 {
+  reset();
   const fn = await loadFunction('waitlist.mjs');
 
   // Ten requests inside the window are allowed; the eleventh is not.

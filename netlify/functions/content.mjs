@@ -135,13 +135,33 @@ function validateFaq(input) {
   return { question, answer };
 }
 
+// Every item carries a stable id so edits and deletes address a specific row.
+// Positions shift as items are added and removed; ids do not.
+function ensureIds(content) {
+  let changed = false;
+  for (const list of [content.caseStudies, content.faqs]) {
+    for (const item of list) {
+      if (!item.id) {
+        item.id = crypto.randomUUID();
+        changed = true;
+      }
+    }
+  }
+  return changed;
+}
+
 async function readContent(store) {
   const existing = await store.get(KEY, { type: 'json' });
-  if (existing && Array.isArray(existing.caseStudies) && Array.isArray(existing.faqs)) {
-    return existing;
+  const content =
+    existing && Array.isArray(existing.caseStudies) && Array.isArray(existing.faqs)
+      ? existing
+      : structuredClone(SEED);
+
+  const needsIds = ensureIds(content);
+  if (!existing || needsIds) {
+    await store.setJSON(KEY, content);
   }
-  await store.setJSON(KEY, SEED);
-  return SEED;
+  return content;
 }
 
 // addedBy/addedAt are kept for audit but never sent to the browser -- they
@@ -151,12 +171,26 @@ function publicView(content) {
     const copy = Object.assign({}, item);
     delete copy.addedBy;
     delete copy.addedAt;
+    delete copy.updatedBy;
+    delete copy.updatedAt;
     return copy;
   };
   return {
     caseStudies: content.caseStudies.map(strip),
     faqs: content.faqs.map(strip)
   };
+}
+
+function collectionFor(content, type) {
+  if (type === 'caseStudy') return content.caseStudies;
+  if (type === 'faq') return content.faqs;
+  return null;
+}
+
+function validateFor(type, payload) {
+  if (type === 'caseStudy') return validateCaseStudy(payload);
+  if (type === 'faq') return validateFaq(payload);
+  return null;
 }
 
 export default async (request) => {
@@ -179,13 +213,14 @@ export default async (request) => {
     }
   }
 
-  if (request.method !== 'POST') {
-    return new Response(null, { status: 405, headers: { Allow: 'GET, POST' } });
+  const writeMethods = ['POST', 'PUT', 'DELETE'];
+  if (writeMethods.indexOf(request.method) === -1) {
+    return new Response(null, { status: 405, headers: { Allow: 'GET, POST, PUT, DELETE' } });
   }
 
   const user = await verifyUser(request);
   if (!user) {
-    return jsonResponse(401, { error: 'You must be signed in to add content.' });
+    return jsonResponse(401, { error: 'You must be signed in to change content.' });
   }
 
   let payload;
@@ -195,31 +230,65 @@ export default async (request) => {
     return jsonResponse(400, { error: 'Malformed request.' });
   }
 
-  const isCaseStudy = payload.type === 'caseStudy';
-  const isFaq = payload.type === 'faq';
-  if (!isCaseStudy && !isFaq) {
+  if (payload.type !== 'caseStudy' && payload.type !== 'faq') {
     return jsonResponse(400, { error: 'Unknown content type.' });
-  }
-
-  const item = isCaseStudy ? validateCaseStudy(payload) : validateFaq(payload);
-  if (!item) {
-    return jsonResponse(400, { error: 'One or more fields are missing or too long.' });
   }
 
   try {
     const content = await readContent(store);
-    const collection = isCaseStudy ? content.caseStudies : content.faqs;
+    const collection = collectionFor(content, payload.type);
 
-    if (collection.length >= MAX_ITEMS) {
-      return jsonResponse(409, { error: 'This collection is full.' });
+    if (request.method === 'POST') {
+      if (collection.length >= MAX_ITEMS) {
+        return jsonResponse(409, { error: 'This collection is full.' });
+      }
+
+      const item = validateFor(payload.type, payload);
+      if (!item) {
+        return jsonResponse(400, { error: 'One or more fields are missing or too long.' });
+      }
+
+      item.id = crypto.randomUUID();
+      item.addedBy = user.email;
+      item.addedAt = new Date().toISOString();
+      collection.push(item);
+
+      await store.setJSON(KEY, content);
+      return jsonResponse(201, publicView(content));
     }
 
-    item.addedBy = user.email;
-    item.addedAt = new Date().toISOString();
-    collection.push(item);
+    const id = typeof payload.id === 'string' ? payload.id : null;
+    if (!id) {
+      return jsonResponse(400, { error: 'Missing item id.' });
+    }
+
+    const index = collection.findIndex((item) => item.id === id);
+    if (index === -1) {
+      return jsonResponse(404, { error: 'That item no longer exists.' });
+    }
+
+    if (request.method === 'DELETE') {
+      collection.splice(index, 1);
+      await store.setJSON(KEY, content);
+      return jsonResponse(200, publicView(content));
+    }
+
+    const updated = validateFor(payload.type, payload);
+    if (!updated) {
+      return jsonResponse(400, { error: 'One or more fields are missing or too long.' });
+    }
+
+    // Preserve provenance: who first created it stays on the record.
+    const previous = collection[index];
+    updated.id = previous.id;
+    updated.addedBy = previous.addedBy;
+    updated.addedAt = previous.addedAt;
+    updated.updatedBy = user.email;
+    updated.updatedAt = new Date().toISOString();
+    collection[index] = updated;
 
     await store.setJSON(KEY, content);
-    return jsonResponse(201, publicView(content));
+    return jsonResponse(200, publicView(content));
   } catch (error) {
     console.error('write failed:', error && error.message);
     return jsonResponse(500, { error: 'Could not save content.' });
