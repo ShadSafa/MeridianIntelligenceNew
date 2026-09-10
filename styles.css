@@ -1324,7 +1324,9 @@ body.is-admin .item-admin {
 }
 
 .page-bg .navbar,
-.page-bg > div,
+/* Excludes .modal: it is a direct child of body and must keep position:fixed
+   so it overlays instead of dropping into the page flow. */
+.page-bg > div:not(.modal),
 .page-bg > footer {
     position: relative;
     z-index: 1;
